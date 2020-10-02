@@ -5,7 +5,7 @@ from src.get_image_size import get_image_size
 
 
 class Compress:
-    def __init__(self, input_file, output_file, target_size):
+    def __init__(self, input_file, output_file, target_size, preserve_dimensions):
         self.input_file = input_file
         self.output_file = output_file
         self.target_size = target_size
@@ -18,14 +18,22 @@ class Compress:
             return
 
         (image_format, image_size) = self.get_input_image_details()
-        if image_format not in ('JPEG', 'JPG'):
+        if image_format not in ('JPEG', 'JPG', 'TIFF', 'WebP', 'PPM'):
             print('Only JPGs and JPEGs are supported at the moment.')
             return
 
         self.print_input_image_details(image_format, image_size)
 
-        self.resize_image(image_format, image_size)
-        echo('Resized Successfully!')
+        if not preserve_dimensions:
+            self.resize_image(image_format, image_size)
+            echo('Resized Successfully!')
+        else:
+            if target_size > get_image_size(self.input_image, image_format):
+                echo('Target size cannot be greater than image size when compressing')
+                return
+            self.change_image_quality(image_format, image_size)
+            echo('Compressed Successfully!')
+
         self.output_image = self.open_output_file()
         (output_format, output_size) = self.get_output_image_details()
         self.print_image_details(output_format, output_size)
@@ -84,3 +92,20 @@ class Compress:
         resized_image.save(self.output_file, image_format, optimize=True)
 
         return resized_image
+
+    def change_image_quality(self, image_format, image_dimensions):
+        higher_quality = 100
+        lower_quality = 1
+
+        while (higher_quality - lower_quality) > 1:
+            target_quality = int((higher_quality + lower_quality) / 2)
+            resized_image = self.input_image.resize(image_dimensions)
+            image_size = get_image_size(resized_image, image_format, target_quality)
+            if image_size > self.target_size:
+                higher_quality = target_quality - 1
+            else:
+                lower_quality = target_quality
+
+        final_quality = lower_quality
+        resized_image = self.input_image.resize(image_dimensions)
+        resized_image.save(self.output_file, image_format, optimize=True, quality=final_quality)

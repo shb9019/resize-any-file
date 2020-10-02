@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="resizeanyfile",
+    name="resize-any-file",
     version="0.0.2",
     author="Sai Hemanth",
     author_email="saihemanth9019@gmail.com",
@@ -14,10 +14,10 @@ setuptools.setup(
     url="https://github.com/shb9019/resize-any-file",
     packages=setuptools.find_packages(),
     include_package_data=True,
-    install_requires=['Click'],
+    install_requires=['Click', 'pillow'],
     entry_points='''
         [console_scripts]
-        resizeanyfile=main:cli
+        resize-any-file=main:main
     ''',
     classifiers=[
         "Programming Language :: Python :: 3",
